@@ -1,0 +1,40 @@
+name: Patch RouterOS 6.49.15 mipsbe.npk
+
+on:
+  workflow_dispatch:
+
+env:
+  MIKRO_NPK_SIGN_PUBLIC_KEY: ${{ secrets.MIKRO_NPK_SIGN_PUBLIC_KEY }}
+  MIKRO_LICENSE_PUBLIC_KEY: ${{ secrets.MIKRO_LICENSE_PUBLIC_KEY }}
+  CUSTOM_NPK_SIGN_PRIVATE_KEY: ${{ secrets.CUSTOM_NPK_SIGN_PRIVATE_KEY }}
+  CUSTOM_NPK_SIGN_PUBLIC_KEY: ${{ secrets.CUSTOM_NPK_SIGN_PUBLIC_KEY }}
+  CUSTOM_LICENSE_PRIVATE_KEY: ${{ secrets.CUSTOM_LICENSE_PRIVATE_KEY }}
+  CUSTOM_LICENSE_PUBLIC_KEY: ${{ secrets.CUSTOM_LICENSE_PUBLIC_KEY }}
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          sudo pip3 install -r requirements.txt
+      - name: Download RouterOS 6.49.15 mipsbe.npk
+        run: |
+          sudo curl -s -o routeros-6.49.15-mipsbe.npk https://download.mikrotik.com/routeros/6.49.15/routeros-6.49.15-mipsbe.npk
+      - name: Patch RouterOS 6.49.15 mipsbe.npk
+        run: |
+          sudo python3 patch.py npk routeros-6.49.15-mipsbe.npk
+      - name: Upload patched npk file
+        uses: actions/upload-artifact@v3
+        with:
+          name: routeros-6.49.15-mipsbe-patched.npk
+          path: routeros-6.49.15-mipsbe-patched.npk
+This workflow downloads the RouterOS 6.49.15 mipsbe.npk file, patches it using the patch.py script, and uploads the patched npk file as an artifact
